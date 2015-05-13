@@ -8,7 +8,7 @@
  * interface file instead. 
  * ----------------------------------------------------------------------------- */
 
-package simplelib
+package gtmlib
 
 
 

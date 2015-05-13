@@ -14,8 +14,8 @@ OBJPATH=obj
 LIBPATH=lib
 BINPATH=bin
 
-OBJS=$(OBJPATH)/simpleclass.o $(OBJPATH)/simplelib_wrap.o
-OUT=$(LIBPATH)/libSimpleLib.so
+OBJS=$(OBJPATH)/GTM.o $(OBJPATH)/gtmlib_wrap.o
+OUT=$(LIBPATH)/libGTMLib.so
 
 INCLUDES=-I ./$(INCPATH)
 
@@ -28,15 +28,15 @@ default: $(OUT)
 $(OUT): $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o $@ $^
 
-obj/simplelib_wrap.o: simplelib_wrap.cxx inc/simpleclass.h
+obj/gtmlib_wrap.o: gtmlib_wrap.cxx inc/GTM.h
 	$(CC) $(CXXFLAGS) $(INCLUDES) -fpic -c $< -o $@
 
-obj/simpleclass.o: src/simpleclass.cpp inc/simpleclass.h
+obj/GTM.o: src/GTM.cpp inc/GTM.h
 	$(CC) $(CXXFLAGS) $(INCLUDES) -fpic -c $< -o $@
 
 
-simplelib_wrap.cxx:
-	swig -go -c++ -intgosize 64 -soname libSimpleLib.so simplelib.swig
+gtmlib_wrap.cxx:
+	swig -go -c++ -intgosize 64 -soname libGTMLib.so gtmlib.swig
 
 .PHONY: clean cleanall
 
@@ -53,19 +53,19 @@ cleanall: clean
 
 build:
 	@echo "Building bindings..."
-	$(EXE)go tool 6c -I $$HOME/dev/goinstallation/go/pkg/linux_amd64/ -D _64BIT simplelib_gc.c
-	$(EXE)go tool 6g simplelib.go
-	$(EXE)go tool pack grc simplelib.a simplelib.6 simplelib_gc.6
+	$(EXE)go tool 6c -I $$HOME/dev/goinstallation/go/pkg/linux_amd64/ -D _64BIT gtmlib_gc.c
+	$(EXE)go tool 6g gtmlib.go
+	$(EXE)go tool pack grc gtmlib.a gtmlib.6 gtmlib_gc.6
 	
 	
 install:
 	@echo "Installing go package..."
 	#Rename swig file so go install command does not try to reprocess it
-	mv simplelib.swig simplelib.notswig
+	mv gtmlib.swig gtmlib.notswig
 	export GOPATH=$$HOME/dev/go/; \
 	$(EXE)go install
-	mv simplelib.notswig simplelib.swig
+	mv gtmlib.notswig gtmlib.swig
 
 	@echo "Installing go shared lib..."
-	sudo cp -f lib/libSimpleLib.so /usr/local/lib/
+	sudo cp -f lib/libGTMLib.so /usr/local/lib/
 	sudo ldconfig
