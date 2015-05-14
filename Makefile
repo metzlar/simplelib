@@ -14,13 +14,15 @@ OBJPATH=obj
 LIBPATH=lib
 BINPATH=bin
 
+GTMPATH=$$gtm_dist
+
 OBJS=$(OBJPATH)/GTM.o $(OBJPATH)/gtmlib_wrap.o
 OUT=$(LIBPATH)/libGTMLib.so
 
-INCLUDES=-I ./$(INCPATH)
+INCLUDES=-I $(GTMPATH) -I ./$(INCPATH)
 
 #Set this to your go installation directory
-EXE=$$HOME/dev/goinstallation/go/bin/
+EXE=$$GOROOT/bin/
 export PATH := bin:$(PATH)
 
 default: $(OUT)
@@ -43,29 +45,33 @@ gtmlib_wrap.cxx:
 clean:
 	rm -f $(OBJPATH)/*.o
 
-cleanall: clean
-	rm -f $(OUT)
+prepare:
 	rm -f *.6
 	rm -f *.a
 	rm -f *.so
 	rm -f *.cxx
 	rm -f *.c
 
+cleanall: clean prepare
+	rm -f $(OUT)
+
 build:
 	@echo "Building bindings..."
-	$(EXE)go tool 6c -I $$HOME/dev/goinstallation/go/pkg/linux_amd64/ -D _64BIT gtmlib_gc.c
+	mkdir -p obj
+	$(EXE)go tool 6c -I $$GOROOT/pkg/linux_amd64/ -D _64BIT gtmlib_gc.c
 	$(EXE)go tool 6g gtmlib.go
 	$(EXE)go tool pack grc gtmlib.a gtmlib.6 gtmlib_gc.6
 	
 	
 install:
 	@echo "Installing go package..."
-	#Rename swig file so go install command does not try to reprocess it
+	#Rename swig and c files so go install command does not try to reprocess it
 	mv gtmlib.swig gtmlib.notswig
-	export GOPATH=$$HOME/dev/go/; \
+	@echo "Make sure GOPATH is exported! $$GOPATH"
 	$(EXE)go install
 	mv gtmlib.notswig gtmlib.swig
 
 	@echo "Installing go shared lib..."
 	sudo cp -f lib/libGTMLib.so /usr/local/lib/
 	sudo ldconfig
+	@echo "Done, make sure to run make cleanall"
